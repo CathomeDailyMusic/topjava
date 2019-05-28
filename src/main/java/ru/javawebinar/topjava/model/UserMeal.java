@@ -26,4 +26,9 @@ public class UserMeal {
     public int getCalories() {
         return calories;
     }
+
+    @Override
+    public String toString() {
+        return "DateTime :" + dateTime + "; Description: " + description + "; Calories: " + calories;
+    }
 }

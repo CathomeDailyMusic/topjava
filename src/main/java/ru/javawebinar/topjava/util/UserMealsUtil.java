@@ -26,9 +26,8 @@ public class UserMealsUtil {
         );
         List<UserMealWithExceed> filtered =
                 getFilteredWithExceeded(mealList, LocalTime.of(7, 0), LocalTime.of(8,0), 2000);
-        if (filtered != null) {
-            filtered.forEach(System.out::println);
-        }
+        filtered.forEach(System.out::println);
+
         List<UserMealWithExceed> filteredStream =
                 getFilteredWithExceededStream(mealList, LocalTime.of(7, 0), LocalTime.of(8,0), 2000);
         filteredStream.forEach(System.out::println);

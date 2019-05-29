@@ -57,6 +57,7 @@ public class UserMealsUtil {
 
     // optional stream implementation
     public static List<UserMealWithExceed> getFilteredWithExceededStream(List<UserMeal> mealList, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
+        // the result to be returned
         List<UserMealWithExceed> ret = new ArrayList<>();
         if (mealList == null) {
             return ret;

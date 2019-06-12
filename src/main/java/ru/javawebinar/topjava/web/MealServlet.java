@@ -5,7 +5,6 @@ import ru.javawebinar.topjava.dao.MemoryDao;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.MealsUtil;
 
-import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +13,11 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Objects;
 
 public class MealServlet extends HttpServlet {
     private static String LIST = "meals.jsp";
+    private static String INSERT_OR_EDIT = "meal.jsp";
     private Dao<Meal> dao;
 
     public MealServlet() {
@@ -26,8 +26,6 @@ public class MealServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        super.init();
-
         dao.add(new Meal(LocalDateTime.of(2019, 6, 1, 10, 0),
                 "Завтрак", 500));
         dao.add(new Meal(LocalDateTime.of(2019, 6, 1, 14, 0),
@@ -44,38 +42,30 @@ public class MealServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String INSERT_OR_EDIT = "meal.jsp";
         String forward;
-        String action = request.getParameter("action");
-        if (action == null) {
-            forward = LIST;
-            request.setAttribute("meals", new CopyOnWriteArrayList<>(MealsUtil.getFilteredWithExcess(dao.getAll(),
-                    LocalTime.MIN, LocalTime.MAX, 2000)));
-        } else
-            switch (action) {
-                case "delete":
-                    forward = LIST;
-                    dao.delete(Integer.parseInt(request.getParameter("id")));
-                    request.setAttribute("meals", new CopyOnWriteArrayList<>(MealsUtil.getFilteredWithExcess(dao.getAll(),
-                            LocalTime.MIN, LocalTime.MAX, 2000)));
-                    break;
-                case "edit":
-                    forward = INSERT_OR_EDIT;
-                    Meal meal = dao.getById(Integer.parseInt(request.getParameter("id")));
-                    request.setAttribute("meal", meal);
-                    break;
-                case "insert":
-                    forward = INSERT_OR_EDIT;
-                    break;
-                default:
-                    forward = LIST;
-                    request.setAttribute("meals", new CopyOnWriteArrayList<>(MealsUtil.getFilteredWithExcess(dao.getAll(),
-                            LocalTime.MIN, LocalTime.MAX, 2000)));
-                    break;
-            }
+        String action = Objects.toString(request.getParameter("action"), "");
 
-        RequestDispatcher view = request.getRequestDispatcher(forward);
-        view.forward(request, response);
+        switch (action) {
+            case "delete":
+                forward = LIST;
+                dao.delete(Integer.parseInt(request.getParameter("id")));
+                // after redirect to "../meals" page we enter doGet() once again with action == ""
+                response.sendRedirect("meals");
+                return;
+            case "edit":
+                forward = INSERT_OR_EDIT;
+                Meal meal = dao.getById(Integer.parseInt(request.getParameter("id")));
+                request.setAttribute("meal", meal);
+                break;
+            case "insert":
+                forward = INSERT_OR_EDIT;
+                break;
+            default:
+                forward = LIST;
+                request.setAttribute("meals", MealsUtil.getFilteredWithExcess(dao.getAll(), LocalTime.MIN, LocalTime.MAX, 2000));
+        }
+
+        request.getRequestDispatcher(forward).forward(request, response);
     }
 
     @Override
@@ -96,8 +86,7 @@ public class MealServlet extends HttpServlet {
             dao.update(meal);
         }
 
-        request.setAttribute("meals", new CopyOnWriteArrayList<>(MealsUtil.getFilteredWithExcess(dao.getAll(),
-                LocalTime.MIN, LocalTime.MAX, 2000)));
+        request.setAttribute("meals", MealsUtil.getFilteredWithExcess(dao.getAll(), LocalTime.MIN, LocalTime.MAX, 2000));
         request.getRequestDispatcher(LIST).forward(request, response);
     }
 }

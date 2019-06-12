@@ -1,49 +1,46 @@
 package ru.javawebinar.topjava.dao;
 
 import ru.javawebinar.topjava.model.Idable;
-import ru.javawebinar.topjava.util.Counter;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class MemoryDao<T extends Idable> implements Dao<T> {
-    private List<T> list;
-    private Counter counter;
+    private final AtomicLong counter;
+    private final Map<Long, T> map;
 
     public MemoryDao() {
-        list = new CopyOnWriteArrayList<>();
-        counter = new Counter();
+        map = new ConcurrentHashMap<>();
+        counter = new AtomicLong(0L);
     }
 
     @Override
     public void add(T item) {
-        item.setId(counter.incrementAndGet());
-        list.add(item);
+        long id = counter.incrementAndGet();
+        item.setId(id);
+        map.put(id, item);
     }
 
     @Override
     public void delete(long id) {
-        T found = getById(id);
-        list.remove(found);
+        map.remove(id);
     }
 
     @Override
     public void update(T item) {
-        list.set(list.indexOf(item), item);
+        map.put(item.getId(), item);
     }
 
     @Override
     public List<T> getAll() {
-        return list;
+        return new ArrayList<>(map.values());
     }
 
     @Override
     public T getById(long id) {
-        for (T item : list) {
-            if (item.getId() == id) {
-                return item;
-            }
-        }
-        return null;
+        return map.get(id);
     }
 }

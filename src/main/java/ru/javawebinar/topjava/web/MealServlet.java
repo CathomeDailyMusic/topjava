@@ -20,11 +20,17 @@ import java.util.Objects;
 
 public class MealServlet extends HttpServlet {
     private static final Logger log = LoggerFactory.getLogger(MealServlet.class);
-    private ConfigurableApplicationContext appCtx = new ClassPathXmlApplicationContext("spring/spring-app.xml");
-    private MealRestController controller = appCtx.getBean(MealRestController.class);
+    private ConfigurableApplicationContext appCtx;
+    private MealRestController controller;
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    public void init() {
+        appCtx      = new ClassPathXmlApplicationContext("spring/spring-app.xml");
+        controller  = appCtx.getBean(MealRestController.class);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         request.setCharacterEncoding("UTF-8");
 
         String id = request.getParameter("id");
@@ -73,10 +79,6 @@ public class MealServlet extends HttpServlet {
                 LocalTime endTime   = endTimeStr.isEmpty()      ? null : LocalTime.parse(endTimeStr);
                 log.info("get filtered {}-{} {}-{}", startDate, endDate, startTime, endTime);
                 request.setAttribute("meals", controller.getAll(startDate, endDate, startTime, endTime));
-                request.setAttribute("startDate",   startDate);
-                request.setAttribute("endDate",     endDate);
-                request.setAttribute("startTime",   startTime);
-                request.setAttribute("endTime",     endTime);
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
             case "clear":

@@ -43,7 +43,7 @@ public class MealRestController {
         startTime   = startTime == null ? LocalTime.MIN : startTime;
         endTime     = endTime   == null ? LocalTime.MAX : endTime;
 
-        return getFilteredWithExcess(service.getAll(authUserId(), startDate, endDate), authUserCaloriesPerDay(),
+        return getFilteredWithExcess(service.getAllForPeriod(authUserId(), startDate, endDate), authUserCaloriesPerDay(),
                 startTime, endTime);
     }
 

@@ -10,6 +10,7 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 @Repository
@@ -29,16 +30,12 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
 
     @Override
     public Meal save(Meal meal, int userId) {
-        Map<Integer, Meal> userMeals = repository.get(userId);
+        Map<Integer, Meal> userMeals = repository.computeIfAbsent(userId, key -> new HashMap<>());
         if (!meal.isNew()) {
-            return userMeals == null ? null : userMeals.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
+            return userMeals.computeIfPresent(meal.getId(), (id, oldMeal) -> meal);
         }
         else {
             meal.setId(counter.incrementAndGet());
-            if (userMeals == null) {
-                userMeals = new HashMap<>();
-                repository.put(userId, userMeals);
-            }
             userMeals.put(meal.getId(), meal);
             return meal;
         }
@@ -47,12 +44,7 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
     @Override
     public boolean delete(int id, int userId) {
         Map<Integer, Meal> userMeals = repository.get(userId);
-        if (userMeals == null) {
-            return false;
-        }
-        else {
-            return userMeals.remove(id) != null;
-        }
+        return userMeals != null && userMeals.remove(id) != null;
     }
 
     @Override
@@ -63,22 +55,20 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
 
     @Override
     public List<Meal> getAll(int userId) {
-        Map<Integer, Meal> userMeals = repository.get(userId);
-        if (userMeals == null) {
-            return new ArrayList<>();
-        }
-        return userMeals.values().stream()
-                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
-                .collect(Collectors.toList());
+        return getAllFiltered(userId, meal -> true);
     }
 
     @Override
-    public List<Meal> getAll(int userId, LocalDate startDate, LocalDate endDate) {
+    public List<Meal> getAllForPeriod(int userId, LocalDate startDate, LocalDate endDate) {
+        return getAllFiltered(userId, meal -> DateTimeUtil.isBetween(meal.getDate(), startDate, endDate));
+    }
+
+    private List<Meal> getAllFiltered(int userId, Predicate<Meal> filter) {
         Map<Integer, Meal> userMeals = repository.get(userId);
         if (userMeals == null) {
             return new ArrayList<>();
         }
-        return userMeals.values().stream().filter(meal -> DateTimeUtil.isBetween(meal.getDate(), startDate, endDate))
+        return userMeals.values().stream().filter(filter)
                 .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }

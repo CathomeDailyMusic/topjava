@@ -41,10 +41,11 @@ public class MealServiceTest {
 
     private static void logInfo(long nanos, Description description) {
         String testName = description.getMethodName();
-        String testStat = String.format("Test %s has been taken in %d microseconds",
-                testName, TimeUnit.NANOSECONDS.toMicros(nanos));
+        Long millis = TimeUnit.NANOSECONDS.toMillis(nanos);
+        String testStat = String.format("Test %s has been taken in %d milliseconds",
+                testName, millis);
         log.info(testStat);
-        TEST_STATS.append("\r\n").append(testStat);
+        TEST_STATS.append(String.format("|%-20s|%20d|%n", testName, millis));
     }
 
     @Rule
@@ -65,7 +66,10 @@ public class MealServiceTest {
 
     @BeforeClass
     public static void setUp() {
-        TEST_STATS.append("Test summary stats:");
+        TEST_STATS.append("\n\nTEST SUMMARY STATS\n");
+        TEST_STATS.append(String.format("%43s%n", "=").replace(" ", "="));
+        TEST_STATS.append(String.format("|%-20s|%20s|%n", "Test name", "Duration, ms"));
+        TEST_STATS.append(String.format("%43s%n", "=").replace(" ", "="));
     }
 
     @Test
@@ -140,10 +144,11 @@ public class MealServiceTest {
 
     @AfterClass
     public static void tearDown() {
-        TEST_STATS.append("\r\n")
-                .append(totalTests)
-                .append(" tests finished, total time in seconds: ")
-                .append(TimeUnit.NANOSECONDS.toSeconds(totalNanos));
+        TEST_STATS.append(String.format("%43s%n", "=").replace(" ", "="));
+        TEST_STATS.append(totalTests)
+                .append(" tests finished, total time (milliseconds): ")
+                .append(TimeUnit.NANOSECONDS.toMillis(totalNanos))
+                .append("\n");
         log.info(TEST_STATS.toString());
     }
 }

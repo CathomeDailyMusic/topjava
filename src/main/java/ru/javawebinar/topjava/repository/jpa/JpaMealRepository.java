@@ -22,10 +22,12 @@ public class JpaMealRepository implements MealRepository {
     @Override
     @Transactional
     public Meal save(Meal meal, int userId) {
-        if (!meal.isNew() && em.find(Meal.class, meal.getId()).getUser().getId() != userId) {
+        if (!meal.isNew() &&
+                (em.find(Meal.class, meal.getId()) == null ||
+                        em.find(Meal.class, meal.getId()).getUser().getId() != userId)
+        ) {
             return null;
-        }
-            else {
+        } else {
             User ref = em.getReference(User.class, userId);
             meal.setUser(ref);
             if (meal.isNew()) {

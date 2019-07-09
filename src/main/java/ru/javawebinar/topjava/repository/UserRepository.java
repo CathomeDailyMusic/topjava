@@ -15,6 +15,11 @@ public interface UserRepository {
     User get(int id);
 
     // null if not found
+    default User getWithMeals(int id) {
+        return null;
+    }
+
+    // null if not found
     User getByEmail(String email);
 
     List<User> getAll();

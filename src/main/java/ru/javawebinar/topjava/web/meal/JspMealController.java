@@ -1,6 +1,5 @@
-package ru.javawebinar.topjava.web;
+package ru.javawebinar.topjava.web.meal;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -9,9 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import ru.javawebinar.topjava.model.Meal;
-import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
-import ru.javawebinar.topjava.util.MealsUtil;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDate;
@@ -22,31 +19,23 @@ import java.util.List;
 
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalDate;
 import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
-import static ru.javawebinar.topjava.web.SecurityUtil.authUserCaloriesPerDay;
-import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 
 @Controller
 @RequestMapping("/meals")
-public class MealController {
-    @Autowired
-    private MealService service;
-
+public class JspMealController extends AbstractMealController {
     @GetMapping
-    public String meals(HttpServletRequest request, Model model) {
-        List<MealTo> mealToList;
-        if ("filter".equalsIgnoreCase(request.getParameter("action"))) {
-            LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
-            LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
-            LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
-            LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
-            mealToList = MealsUtil.getFilteredWithExcess(
-                    service.getBetweenDates(startDate, endDate, authUserId()),
-                    authUserCaloriesPerDay(), startTime, endTime);
-        } else {
-            mealToList = MealsUtil.getWithExcess(
-                    service.getAll(authUserId()),
-                    SecurityUtil.authUserCaloriesPerDay());
-        }
+    public String meals(Model model) {
+        model.addAttribute("meals", getAllInternal());
+        return "meals";
+    }
+
+    @GetMapping("/filter")
+    public String filter(HttpServletRequest request, Model model) {
+        LocalDate startDate = parseLocalDate(request.getParameter("startDate"));
+        LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
+        LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
+        LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
+        List<MealTo> mealToList = getBetweenInternal(startDate, startTime, endDate, endTime);
         model.addAttribute("meals", mealToList);
         return "meals";
     }
@@ -60,14 +49,14 @@ public class MealController {
 
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable int id, Model model) {
-        Meal meal = service.get(id, authUserId());
+        Meal meal = getInternal(id);
         model.addAttribute("meal", meal);
         return "mealForm";
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable int id) {
-        service.delete(id, authUserId());
+    public String remove(@PathVariable int id) {
+        deleteInternal(id);
         return "redirect:/meals";
     }
 
@@ -77,12 +66,13 @@ public class MealController {
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")));
-        String id = request.getParameter("id");
-        if (StringUtils.isEmpty(id)) {
-            service.create(meal, authUserId());
+        String idStr = request.getParameter("id");
+        if (StringUtils.isEmpty(idStr)) {
+            createInternal(meal);
         } else {
-            meal.setId(Integer.parseInt(id));
-            service.update(meal, authUserId());
+            int id = Integer.parseInt(idStr);
+            meal.setId(id);
+            updateInternal(meal, id);
         }
         return "redirect:/meals";
     }

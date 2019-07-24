@@ -19,7 +19,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @Repository
 @Transactional(readOnly = true)
@@ -41,11 +40,8 @@ public class JdbcUserRepository implements UserRepository {
                     int userId = resultSet.getInt("id");
                     if (userId != lastUserId) {
                         user = ROW_MAPPER.mapRow(resultSet, resultSet.getRow());
+                        user.setRoles(null);
                         roles = user.getRoles();
-                        if (roles == null) {
-                            user.setRoles(null);
-                            roles = user.getRoles();
-                        }
                         users.add(user);
                     }
                     Role role = ROLE_ROW_MAPPER.mapRow(resultSet, resultSet.getRow());
@@ -83,9 +79,7 @@ public class JdbcUserRepository implements UserRepository {
         if (user.isNew()) {
             Number newKey = insertUser.executeAndReturnKey(parameterSource);
             user.setId(newKey.intValue());
-            if (!updateRoles(insertRoles, user.getId(), user.getRoles())) {
-                return null;
-            }
+            updateRoles(insertRoles, user.getId(), user.getRoles());
         } else {
             if (namedParameterJdbcTemplate.update(
                     "UPDATE users SET name=:name, email=:email, password=:password, " +
@@ -98,26 +92,22 @@ public class JdbcUserRepository implements UserRepository {
             Set<Role> oldRolesSet = EnumSet.copyOf(oldRoles);
             Set<Role> rolesToDelete = EnumSet.copyOf(oldRoles);
             rolesToDelete.removeAll(user.getRoles());
-            if (!updateRoles(deleteRoles, user.getId(), rolesToDelete)) {
-                return null;
-            }
+            updateRoles(deleteRoles, user.getId(), rolesToDelete);
             Set<Role> rolesToAdd = EnumSet.copyOf(user.getRoles());
             rolesToAdd.removeAll(oldRolesSet);
-            if (!updateRoles(insertRoles, user.getId(), rolesToAdd)) {
-                return null;
-            }
+            updateRoles(insertRoles, user.getId(), rolesToAdd);
         }
         return user;
     }
 
-    private boolean updateRoles(String sql, Integer userId, Set<Role> roleSet) {
+    private void updateRoles(String sql, Integer userId, Set<Role> roleSet) {
         if (roleSet.size() == 0) {
-            return true;
+            return;
         }
 
         List<String> roleList = roleSet.stream().map(Enum::toString).collect(Collectors.toList());
 
-        int[] result = jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
+        jdbcTemplate.batchUpdate(sql, new BatchPreparedStatementSetter() {
             @Override
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 ps.setInt(1, userId);
@@ -129,8 +119,6 @@ public class JdbcUserRepository implements UserRepository {
                 return roleList.size();
             }
         });
-
-        return roleList.size() == IntStream.of(result).sum();
     }
 
     @Override

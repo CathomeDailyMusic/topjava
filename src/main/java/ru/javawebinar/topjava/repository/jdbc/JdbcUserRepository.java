@@ -14,10 +14,7 @@ import ru.javawebinar.topjava.repository.UserRepository;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.EnumSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -32,26 +29,24 @@ public class JdbcUserRepository implements UserRepository {
 
     private static final ResultSetExtractor<List<User>> RESULT_SET_EXTRACTOR =
             resultSet -> {
-                final List<User> users = new LinkedList<>();
-                int lastUserId = 0;
-                User user;
-                Set<Role> roles = null;
+                final Map<Integer, User> userMap = new LinkedHashMap<>();
                 while (resultSet.next()) {
                     int userId = resultSet.getInt("id");
-                    if (userId != lastUserId) {
-                        user = ROW_MAPPER.mapRow(resultSet, resultSet.getRow());
-                        user.setRoles(null);
-                        roles = user.getRoles();
-                        users.add(user);
-                    }
-                    Role role = ROLE_ROW_MAPPER.mapRow(resultSet, resultSet.getRow());
+                    int rowNum = resultSet.getRow();
+                    User currentUser = ROW_MAPPER.mapRow(resultSet, rowNum);
+                    User user = userMap.computeIfAbsent(userId, u -> currentUser);
+                    Set<Role> roles = user.getRoles();
+                    Role role = ROLE_ROW_MAPPER.mapRow(resultSet, rowNum);
                     if (role != null) {
+                        if (roles == null) {
+                            user.setRoles(null);
+                            roles = user.getRoles();
+                        }
                         roles.add(role);
                     }
-                    lastUserId = userId;
                 }
                 resultSet.close();
-                return users;
+                return new LinkedList<>(userMap.values());
             };
 
     private final JdbcTemplate jdbcTemplate;

@@ -22,40 +22,40 @@ public abstract class AbstractMealController {
     @Autowired
     protected MealService service;
 
-    Meal getInternal(int id) {
+    Meal get(int id) {
         int userId = SecurityUtil.authUserId();
         log.info("get meal {} for user {}", id, userId);
         return service.get(id, userId);
     }
 
-    List<MealTo> getAllInternal() {
+    List<MealTo> getAll() {
         int userId = SecurityUtil.authUserId();
         log.info("getAll for user {}", userId);
         return MealsUtil.getWithExcess(service.getAll(userId), SecurityUtil.authUserCaloriesPerDay());
     }
 
-    List<MealTo> getBetweenInternal(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
+    List<MealTo> getBetween(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
         int userId = SecurityUtil.authUserId();
         log.info("getBetween dates({} - {}) time({} - {}) for user {}", startDate, endDate, startTime, endTime, userId);
         List<Meal> mealsDateFiltered = service.getBetweenDates(startDate, endDate, userId);
         return MealsUtil.getFilteredWithExcess(mealsDateFiltered, SecurityUtil.authUserCaloriesPerDay(), startTime, endTime);
     }
 
-    Meal createInternal(Meal meal) {
+    Meal create(Meal meal) {
         int userId = SecurityUtil.authUserId();
         checkNew(meal);
         log.info("create {} for user {}", meal, userId);
         return service.create(meal, userId);
     }
 
-    void updateInternal(Meal meal, int id) {
+    void update(Meal meal, int id) {
         int userId = SecurityUtil.authUserId();
         assureIdConsistent(meal, id);
         log.info("update {} for user {}", meal, userId);
         service.update(meal, userId);
     }
 
-    void deleteInternal(int id) {
+    void delete(int id) {
         int userId = SecurityUtil.authUserId();
         log.info("delete meal {} for user {}", id, userId);
         service.delete(id, userId);

@@ -25,7 +25,7 @@ import static ru.javawebinar.topjava.util.DateTimeUtil.parseLocalTime;
 public class JspMealController extends AbstractMealController {
     @GetMapping
     public String meals(Model model) {
-        model.addAttribute("meals", getAllInternal());
+        model.addAttribute("meals", getAll());
         return "meals";
     }
 
@@ -35,7 +35,7 @@ public class JspMealController extends AbstractMealController {
         LocalDate endDate = parseLocalDate(request.getParameter("endDate"));
         LocalTime startTime = parseLocalTime(request.getParameter("startTime"));
         LocalTime endTime = parseLocalTime(request.getParameter("endTime"));
-        List<MealTo> mealToList = getBetweenInternal(startDate, startTime, endDate, endTime);
+        List<MealTo> mealToList = getBetween(startDate, startTime, endDate, endTime);
         model.addAttribute("meals", mealToList);
         return "meals";
     }
@@ -49,14 +49,14 @@ public class JspMealController extends AbstractMealController {
 
     @GetMapping("/edit/{id}")
     public String edit(@PathVariable int id, Model model) {
-        Meal meal = getInternal(id);
+        Meal meal = get(id);
         model.addAttribute("meal", meal);
         return "mealForm";
     }
 
     @GetMapping("/delete/{id}")
     public String remove(@PathVariable int id) {
-        deleteInternal(id);
+        delete(id);
         return "redirect:/meals";
     }
 
@@ -68,11 +68,11 @@ public class JspMealController extends AbstractMealController {
                 Integer.parseInt(request.getParameter("calories")));
         String idStr = request.getParameter("id");
         if (StringUtils.isEmpty(idStr)) {
-            createInternal(meal);
+            create(meal);
         } else {
             int id = Integer.parseInt(idStr);
             meal.setId(id);
-            updateInternal(meal, id);
+            update(meal, id);
         }
         return "redirect:/meals";
     }

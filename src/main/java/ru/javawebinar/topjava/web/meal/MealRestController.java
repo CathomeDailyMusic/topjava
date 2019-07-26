@@ -10,12 +10,14 @@ import java.util.List;
 
 @Controller
 public class MealRestController extends AbstractMealController {
+    @Override
     public Meal get(int id) {
-        return getInternal(id);
+        return super.get(id);
     }
 
+    @Override
     public List<MealTo> getAll() {
-        return getAllInternal();
+        return super.getAll();
     }
 
     /**
@@ -24,19 +26,23 @@ public class MealRestController extends AbstractMealController {
      * <li>by time for every date</li>
      * </ol>
      */
+    @Override
     public List<MealTo> getBetween(LocalDate startDate, LocalTime startTime, LocalDate endDate, LocalTime endTime) {
-        return getBetweenInternal(startDate, startTime, endDate, endTime);
+        return super.getBetween(startDate, startTime, endDate, endTime);
     }
 
+    @Override
     public Meal create(Meal meal) {
-        return createInternal(meal);
+        return super.create(meal);
     }
 
+    @Override
     public void update(Meal meal, int id) {
-        updateInternal(meal, id);
+        super.update(meal, id);
     }
 
+    @Override
     public void delete(int id) {
-        deleteInternal(id);
+        super.delete(id);
     }
 }

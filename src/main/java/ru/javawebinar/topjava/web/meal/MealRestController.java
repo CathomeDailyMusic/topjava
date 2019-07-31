@@ -19,6 +19,8 @@ import java.util.List;
 public class MealRestController extends AbstractMealController {
 
     public static final String REST_URL = "/rest/v1/meals";
+    public static final String DATE_PATTERN = "dd-MM-yyyy";
+    public static final String TIME_PATTERN = "HH:mm";
 
     @Override
     @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -28,16 +30,15 @@ public class MealRestController extends AbstractMealController {
 
     @GetMapping(value = "/filter", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<MealTo> filter(
-            @RequestParam(required = false) @LocalDateTimeFormat(pattern = "dd-MM-yyyy") LocalDate startDate,
-            @RequestParam(required = false) @LocalDateTimeFormat(pattern = "dd-MM-yyyy") LocalDate endDate,
-            @RequestParam(required = false) @LocalDateTimeFormat(pattern = "HH:mm") LocalTime startTime,
-            @RequestParam(required = false) @LocalDateTimeFormat(pattern = "HH:mm") LocalTime endTime
+            @RequestParam(required = false) @LocalDateTimeFormat(pattern = DATE_PATTERN) LocalDate startDate,
+            @RequestParam(required = false) @LocalDateTimeFormat(pattern = DATE_PATTERN) LocalDate endDate,
+            @RequestParam(required = false) @LocalDateTimeFormat(pattern = TIME_PATTERN) LocalTime startTime,
+            @RequestParam(required = false) @LocalDateTimeFormat(pattern = TIME_PATTERN) LocalTime endTime
     ) {
         return super.getBetween(startDate, startTime, endDate, endTime);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<Meal> add(@RequestBody Meal meal) {
         Meal created = super.create(meal);
         URI uriOfNewResource = ServletUriComponentsBuilder.fromCurrentContextPath()

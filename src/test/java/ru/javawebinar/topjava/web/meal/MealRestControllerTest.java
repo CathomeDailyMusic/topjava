@@ -25,6 +25,7 @@ import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 
 class MealRestControllerTest extends AbstractControllerTest {
     private static final String REST_URL = MealRestController.REST_URL + '/';
+    private static final String FILTER_SAMPLE_QUERY = "filter?startDate=31-05-2015&endTime=14:00";
 
     @Autowired
     MealService mealService;
@@ -39,8 +40,17 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void testGet() throws Exception {
+        mockMvc.perform(get(REST_URL + MEAL1_ID))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(contentJson(MEAL1));
+    }
+
+    @Test
     void testFilter() throws Exception {
-        mockMvc.perform(get(REST_URL + "filter?startDate=31-05-2015&endTime=14:00"))
+        mockMvc.perform(get(REST_URL + FILTER_SAMPLE_QUERY))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))

@@ -448,6 +448,21 @@
                         <con:parameters/>
                     </con:request>
                 </con:method>
+                <con:method name="" id="c81287b7-4d0f-48f0-ade7-7a879bafb29a" method="GET">
+                    <con:settings/>
+                    <con:parameters/>
+                    <con:request name="Get" id="5ba07ba4-f00d-45be-879b-bff5c5407e3e" mediaType="application/json">
+                        <con:settings/>
+                        <con:endpoint>http://localhost:8080</con:endpoint>
+                        <con:request/>
+                        <con:credentials>
+                            <con:authType>No Authorization</con:authType>
+                        </con:credentials>
+                        <con:jmsConfig JMSDeliveryMode="PERSISTENT"/>
+                        <con:jmsPropertyConfig/>
+                        <con:parameters/>
+                    </con:request>
+                </con:method>
             </con:resource>
             <con:method name="" id="6e268d38-45b6-413c-894d-372fe5c60c42" method="GET">
                 <con:settings/>

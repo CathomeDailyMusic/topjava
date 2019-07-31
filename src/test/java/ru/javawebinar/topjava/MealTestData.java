@@ -9,6 +9,7 @@ import java.util.List;
 
 import static java.time.LocalDateTime.of;
 import static org.assertj.core.api.Assertions.assertThat;
+import static ru.javawebinar.topjava.TestUtil.readFromJsonMvcResult;
 import static ru.javawebinar.topjava.TestUtil.readListFromJsonMvcResult;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 
@@ -48,10 +49,14 @@ public class MealTestData {
     }
 
     public static void assertTOMatch(Iterable<MealTo> actual, Iterable<MealTo> expected) {
-        assertThat(actual).usingFieldByFieldElementComparator().isEqualTo(expected);
+        assertThat(actual).isEqualTo(expected);
     }
 
     public static ResultMatcher contentJson(Iterable<MealTo> expected) {
         return result -> assertTOMatch(readListFromJsonMvcResult(result, MealTo.class), expected);
+    }
+
+    public static ResultMatcher contentJson(Meal expected) {
+        return result -> assertMatch(readFromJsonMvcResult(result, Meal.class), expected);
     }
 }

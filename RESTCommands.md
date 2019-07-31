@@ -1,7 +1,6 @@
 ### Curl commands to REST API
 ##### MealRestController
 
-
 | Path              |  Method | Description                               |
 |-------------------|---------|-------------------------------------------|
 | [`/rest/v1/meals`]|   `GET` | Get all meals of currently logged in user |
@@ -55,6 +54,30 @@
 
 `$ curl "http://localhost:8080/topjava/rest/v1/meals/filter?startDate=31-05-2015&endDate=&startTime=&endTime=14%3A00"`
 
+| Path                     |  Method | Description       |
+|--------------------------|---------|-------------------|
+| [`/rest/v1/meals/{id}`]|   `GET` | Get a specific meal |
+* **URL Params**
+    None
+* **Data Params**
+    None
+
+* **Success Response:**
+
+    * **Code:** 200 <br />
+        **Content-Type: application/json**
+      ```json
+	  {
+	      "id": "int",
+	      "dateTime": "yyyy-MM-ddTHH:mm:ss",
+	      "description": "String",
+	      "calories": "int"
+	  }
+	  ```
+* **Example:**
+
+`$ curl "http://localhost:8080/topjava/rest/v1/meals/100002`
+
 | Path               |  Method | Description   |
 |--------------------|---------|---------------|
 | [`/rest/v1/meals`]|  `POST` | Add a new meal |
@@ -72,8 +95,7 @@
 	      "id": "int",
 	      "dateTime": "yyyy-MM-ddTHH:mm:ss",
 	      "description": "String",
-	      "calories": "int",
-	      "excess": "boolean"
+	      "calories": "int"
 	  }
 	  ```
 * **Example:**

@@ -19,6 +19,12 @@ public class AdminUIController extends AbstractUserController {
     }
 
     @Override
+    @GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public User get(@PathVariable("id") int id) {
+        return super.get(id);
+    }
+
+    @Override
     @DeleteMapping("/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     public void delete(@PathVariable("id") int id) {
@@ -36,5 +42,12 @@ public class AdminUIController extends AbstractUserController {
         if (user.isNew()) {
             super.create(user);
         }
+    }
+
+    @Override
+    @PostMapping("/{id}/status")
+    @ResponseStatus(value = HttpStatus.NO_CONTENT)
+    public void switchStatus(@PathVariable int id, @RequestParam boolean enabled) {
+        super.switchStatus(id, enabled);
     }
 }

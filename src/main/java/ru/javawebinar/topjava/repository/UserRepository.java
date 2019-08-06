@@ -22,4 +22,7 @@ public interface UserRepository {
     default User getWithMeals(int id) {
         throw new UnsupportedOperationException();
     }
+
+    // false if not found
+    boolean switchStatus(int id, boolean enabled);
 }

@@ -89,4 +89,18 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
         List<User> all = service.getAll();
         assertMatch(all, ADMIN, USER);
     }
+
+    @Test
+    void switchStatus() throws Exception {
+        User updated = new User(USER);
+        updated.setEnabled(!USER.isEnabled());
+        service.switchStatus(USER_ID, updated.isEnabled());
+        assertMatch(service.get(USER_ID), updated);
+    }
+
+    @Test
+    void switchStatusNotFound() throws Exception {
+        assertThrows(NotFoundException.class, () ->
+                service.switchStatus(1, true));
+    }
 }

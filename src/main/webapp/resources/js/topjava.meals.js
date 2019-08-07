@@ -38,14 +38,7 @@ $(function () {
 });
 
 function updateTable() {
-    var empty = true;
-    filter.find('.form-control').each(function () {
-        if ($(this).val().trim() !== "") {
-            empty = false;
-            return empty;
-        }
-    });
-    const url = empty ? context.ajaxUrl : context.ajaxUrl + 'filter?' + filter.serialize();
+    const url = context.ajaxUrl + 'filter?' + filter.serialize();
     tableRefresh(url);
 }
 

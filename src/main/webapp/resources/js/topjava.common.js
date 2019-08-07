@@ -32,12 +32,6 @@ function deleteRow(id) {
     });
 }
 
-function updateTable() {
-    $.get(context.ajaxUrl, function (data) {
-        context.datatableApi.clear().rows.add(data).draw();
-    });
-}
-
 function save() {
     $.ajax({
         type: "POST",
@@ -76,4 +70,10 @@ function failNoty(jqXHR) {
         type: "error",
         layout: "bottomRight"
     }).show();
+}
+
+function tableRefresh(url) {
+    $.get(url, function (data) {
+        context.datatableApi.clear().rows.add(data).draw();
+    });
 }

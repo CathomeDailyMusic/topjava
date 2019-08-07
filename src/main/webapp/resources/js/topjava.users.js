@@ -41,20 +41,27 @@ $(function () {
     );
 
     $(".enabled").change(function () {
-        switchEnabled($(this).parents('tr').attr("id"), this.checked);
+        switchEnabled($(this).parents('tr').attr("id"), this);
     });
 });
 
-function switchEnabled(id, enabled) {
+function updateTable() {
+    tableRefresh(context.ajaxUrl);
+}
+
+function switchEnabled(id, checkbox) {
+    enabled = checkbox.checked;
     $.ajax({
         type: "POST",
         url: context.ajaxUrl + id + "/status",
-        data: "enabled=" + enabled
-    }).done(function () {
-        $.get(context.ajaxUrl + id, function (data) {
-            context.datatableApi.row($("tr#" + id)).data(data).draw();
-        });
-        const status = enabled ? "enabled" : "disabled";
-        successNoty("User " + status);
+        data: "enabled=" + enabled,
+        success: function () {
+            $(checkbox).parents('tr').attr('data-userEnabled', enabled);
+            const status = enabled ? "enabled" : "disabled";
+            successNoty("User " + status);
+        },
+        error: function () {
+            checkbox.checked = !enabled;
+        }
     });
 }

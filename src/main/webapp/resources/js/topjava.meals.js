@@ -38,34 +38,18 @@ $(function () {
 });
 
 function updateTable() {
-    if (typeof filter !== "undefined" && $("#filterFlag").prop("checked") === true) {
-        applyFilter();
-    } else {
-        $.get(context.ajaxUrl, function (data) {
-            context.datatableApi.clear().rows.add(data).draw();
-        });
-    }
-}
-
-function applyFilter() {
     var empty = true;
     filter.find('.form-control').each(function () {
-        if ($(this).val() !== "") {
+        if ($(this).val().trim() !== "") {
             empty = false;
-            return false;
+            return empty;
         }
     });
-    if (!empty) {
-        $("#filterFlag").prop("checked", true);
-        $.get(context.ajaxUrl + 'filter', filter.serialize(), function (data) {
-            context.datatableApi.clear().rows.add(data).draw();
-            successNoty("Filter applied");
-        });
-    }
+    const url = empty ? context.ajaxUrl : context.ajaxUrl + 'filter?' + filter.serialize();
+    tableRefresh(url);
 }
 
 function clearFilter() {
     filter.find('.form-control').val('');
-    $("#filterFlag").prop("checked", false);
-    updateTable();
+    tableRefresh(context.ajaxUrl);
 }

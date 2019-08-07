@@ -46,11 +46,10 @@
                     <span class="fa fa-close"></span>
                     <spring:message code="common.cancel"/>
                 </button>
-                <button type="button" class="btn btn-primary" onclick="applyFilter()">
+                <button type="button" class="btn btn-primary" onclick="updateTable()">
                     <span class="fa fa-filter"></span>
                     <spring:message code="meal.filter"/>
                 </button>
-                <input type="checkbox" id="filterFlag" hidden="hidden" readonly/>
             </div>
         </div>
         <br/>

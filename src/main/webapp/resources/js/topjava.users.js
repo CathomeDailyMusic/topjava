@@ -15,6 +15,10 @@ function enable(chkbox, id) {
     });
 }
 
+function populateEditForm(key, value) {
+    populateEditFormCommon(key, value);
+}
+
 // $(document).ready(function () {
 $(function () {
     makeEditable({

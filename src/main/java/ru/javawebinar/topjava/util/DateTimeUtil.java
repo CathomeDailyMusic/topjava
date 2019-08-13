@@ -30,6 +30,10 @@ public class DateTimeUtil {
         return LocalDateTime.of(localDate != null ? localDate : defaultDate, adjustTime);
     }
 
+    public static LocalDateTime parseLocalDateTime(@Nullable String str) {
+        return StringUtils.isEmpty(str) ? null : LocalDateTime.parse(str, DATE_TIME_FORMATTER);
+    }
+
     public static String toString(LocalDateTime ldt) {
         return ldt == null ? "" : ldt.format(DATE_TIME_FORMATTER);
     }

@@ -12,7 +12,7 @@ import ru.javawebinar.topjava.util.UserUtil;
 import javax.validation.Valid;
 import java.util.List;
 
-import static ru.javawebinar.topjava.web.AjaxUtil.getStringResponseEntity;
+import static ru.javawebinar.topjava.util.ValidationUtil.getStringResponseEntity;
 
 @RestController
 @RequestMapping("/ajax/admin/users")

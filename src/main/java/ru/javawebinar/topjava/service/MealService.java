@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.repository.MealRepository;
-import ru.javawebinar.topjava.to.MealTo;
-import ru.javawebinar.topjava.util.MealsUtil;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -47,13 +45,6 @@ public class MealService {
 
     public List<Meal> getAll(int userId) {
         return repository.getAll(userId);
-    }
-
-    public void update(MealTo mealTo, int userId) {
-        Meal meal = repository.get(mealTo.getId(), userId);
-        Assert.notNull(meal, "meal must not be null");
-        MealsUtil.updateFromTo(meal, mealTo);
-        checkNotFoundWithId(repository.save(meal, userId), meal.getId());
     }
 
     public void update(Meal meal, int userId) {

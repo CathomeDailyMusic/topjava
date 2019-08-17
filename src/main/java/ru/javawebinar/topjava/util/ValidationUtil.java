@@ -1,16 +1,32 @@
 package ru.javawebinar.topjava.util;
 
-import org.springframework.http.ResponseEntity;
+import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.validation.BindingResult;
 import ru.javawebinar.topjava.HasId;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.validation.*;
-import java.util.Set;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class ValidationUtil {
+
+    private static final Validator validator;
+    private static Map<String, String> constraintCodeMap = new HashMap<>() {
+        {
+            put("users_unique_email_idx", "exception.users.duplicate_email");
+            put("meals_unique_user_datetime_idx", "exception.meals.duplicate_datetime");
+        }
+    };
+
+    static {
+        //  From Javadoc: implementations are thread-safe and instances are typically cached and reused.
+        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
+        //  From Javadoc: implementations of this interface must be thread-safe
+        validator = factory.getValidator();
+    }
 
     private ValidationUtil() {
     }
@@ -60,7 +76,7 @@ public class ValidationUtil {
         return result;
     }
 
-    public static ResponseEntity<String> getErrorResponse(BindingResult result) {
+    public static String getErrorResponse(BindingResult result) {
         StringJoiner joiner = new StringJoiner("<br>");
         result.getFieldErrors().forEach(
                 fe -> {
@@ -72,16 +88,21 @@ public class ValidationUtil {
                         joiner.add(msg);
                     }
                 });
-        return ResponseEntity.unprocessableEntity().body(joiner.toString());
+        return joiner.toString();
     }
 
-    private static final Validator validator;
-
-    static {
-        //  From Javadoc: implementations are thread-safe and instances are typically cached and reused.
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        //  From Javadoc: implementations of this interface must be thread-safe
-        validator = factory.getValidator();
+    public static String getDataConflictMessage(MessageSource messageSource, DataIntegrityViolationException e) {
+        String rootMsg = ValidationUtil.getRootCause(e).getMessage();
+        if (rootMsg != null) {
+            Optional<Map.Entry<String, String>> entry = constraintCodeMap.entrySet().stream()
+                    .filter((it) -> rootMsg.contains(it.getKey()))
+                    .findAny();
+            if (entry.isPresent()) {
+                return messageSource.getMessage(entry.get().getValue(), null, LocaleContextHolder.getLocale());
+            }
+            return rootMsg;
+        }
+        return e.getLocalizedMessage();
     }
 
     public static <T> void validate(T bean) {

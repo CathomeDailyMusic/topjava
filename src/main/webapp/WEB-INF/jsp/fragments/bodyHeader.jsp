@@ -31,7 +31,8 @@
             </sec:authorize>
 
             <div class="btn-group">
-                <button type="button" class="btn btn-dark dropdown-toggle"
+                <button type="button" class="btn btn-dark dropdown-toggle" id="locale"
+                        value="${pageContext.response.locale}"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                     ${pageContext.response.locale}
                     <span class="sr-only">Toggle Dropdown</span>

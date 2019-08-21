@@ -76,8 +76,8 @@ public class ValidationUtil {
         return result;
     }
 
-    public static String getErrorResponse(BindingResult result) {
-        StringJoiner joiner = new StringJoiner("<br>");
+    public static List<String> getBindingErrorResponse(BindingResult result) {
+        List<String> errors = new LinkedList<>();
         result.getFieldErrors().forEach(
                 fe -> {
                     String msg = fe.getDefaultMessage();
@@ -85,10 +85,10 @@ public class ValidationUtil {
                         if (!msg.startsWith(fe.getField())) {
                             msg = fe.getField() + ' ' + msg;
                         }
-                        joiner.add(msg);
+                        errors.add(msg);
                     }
                 });
-        return joiner.toString();
+        return errors;
     }
 
     public static String getDataConflictMessage(MessageSource messageSource, DataIntegrityViolationException e) {

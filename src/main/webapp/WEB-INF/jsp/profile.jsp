@@ -33,6 +33,7 @@
                             <spring:message code="common.save"/>
                         </button>
                     </div>
+                    <div class="text-danger"><br>${message}</div>
                 </form:form>
             </div>
         </div>

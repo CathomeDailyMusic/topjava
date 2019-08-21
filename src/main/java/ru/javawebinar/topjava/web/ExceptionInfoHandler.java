@@ -9,6 +9,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -24,6 +25,8 @@ import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.servlet.http.HttpServletRequest;
+import java.lang.reflect.Method;
+import java.util.List;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.getDataConflictMessage;
 import static ru.javawebinar.topjava.util.exception.ErrorType.*;
@@ -35,23 +38,6 @@ public class ExceptionInfoHandler {
 
     @Autowired
     MessageSource messageSource;
-
-    //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
-    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e, boolean logException, ErrorType errorType) {
-        Throwable rootCause = ValidationUtil.getRootCause(e);
-        if (logException) {
-            log.error(errorType + " at request " + req.getRequestURL(), rootCause);
-        } else {
-            log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
-        }
-        return new ErrorInfo(req.getRequestURL(), errorType, rootCause.toString());
-    }
-
-    private static ErrorInfo getBindingErrorInfo(HttpServletRequest req, BindingResult bindingResult) {
-        String message = ValidationUtil.getErrorResponse(bindingResult);
-        Exception ex = new Exception(message);
-        return logAndGetErrorInfo(req, ex, false, VALIDATION_ERROR);
-    }
 
     //  http://stackoverflow.com/a/22358422/548473
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)
@@ -65,8 +51,8 @@ public class ExceptionInfoHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ErrorInfo conflict(HttpServletRequest req, DataIntegrityViolationException e) {
         String message = getDataConflictMessage(messageSource, e);
-        e = new DataIntegrityViolationException(message);
-        return logAndGetErrorInfo(req, e, true, DATA_ERROR);
+        writeLog(req, true, DATA_ERROR, ValidationUtil.getRootCause(e));
+        return new ErrorInfo(req.getRequestURL(), DATA_ERROR, message);
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -76,22 +62,34 @@ public class ExceptionInfoHandler {
     }
 
     @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class, HttpMessageNotReadableException.class})
+    @ExceptionHandler({IllegalRequestDataException.class, MethodArgumentTypeMismatchException.class,
+            HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, BindException.class})
     public ErrorInfo illegalRequestDataError(HttpServletRequest req, Exception e) {
-        return logAndGetErrorInfo(req, e, false, VALIDATION_ERROR);
+        List<String> messages = null;
+        Method getBindingResult = ReflectionUtils.findMethod(e.getClass(), "getBindingResult");
+        if (getBindingResult != null) {
+            BindingResult result = (BindingResult) ReflectionUtils.invokeMethod(getBindingResult, e);
+            if (result != null) {
+                messages = ValidationUtil.getBindingErrorResponse(result);
+            }
+        }
+        writeLog(req, false, VALIDATION_ERROR, e);
+        return new ErrorInfo(req.getRequestURL(), VALIDATION_ERROR, messages);
     }
 
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ErrorInfo validationError(HttpServletRequest req, MethodArgumentNotValidException e) {
-        BindingResult bindingResult = e.getBindingResult();
-        return getBindingErrorInfo(req, bindingResult);
+    //    https://stackoverflow.com/questions/538870/should-private-helper-methods-be-static-if-they-can-be-static
+    private static ErrorInfo logAndGetErrorInfo(HttpServletRequest req, Exception e,
+                                                boolean logException, ErrorType errorType) {
+        Throwable rootCause = ValidationUtil.getRootCause(e);
+        writeLog(req, logException, errorType, rootCause);
+        return new ErrorInfo(req.getRequestURL(), errorType, rootCause.toString());
     }
 
-    @ResponseStatus(value = HttpStatus.UNPROCESSABLE_ENTITY)  // 422
-    @ExceptionHandler({BindException.class})
-    public ErrorInfo validationError(HttpServletRequest req, BindException e) {
-        BindingResult bindingResult = e.getBindingResult();
-        return getBindingErrorInfo(req, bindingResult);
+    private static void writeLog(HttpServletRequest req, boolean logException, ErrorType errorType, Throwable rootCause) {
+        if (logException) {
+            log.error(errorType + " at request " + req.getRequestURL(), rootCause);
+        } else {
+            log.warn("{} at request  {}: {}", errorType, req.getRequestURL(), rootCause.toString());
+        }
     }
 }

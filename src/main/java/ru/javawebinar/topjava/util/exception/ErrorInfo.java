@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.util.exception;
 
-import java.util.LinkedList;
 import java.util.List;
 
 public class ErrorInfo {
@@ -9,12 +8,8 @@ public class ErrorInfo {
     private final List<String> detail;
 
     public ErrorInfo(CharSequence url, ErrorType type, String... detail) {
-        this(url, type, List.of(detail));
-    }
-
-    public ErrorInfo(CharSequence url, ErrorType type, List<String> detail) {
         this.url = url.toString();
         this.type = type;
-        this.detail = new LinkedList<>(detail);
+        this.detail = List.of(detail);
     }
 }

@@ -14,7 +14,7 @@ import java.util.*;
 public class ValidationUtil {
 
     private static final Validator validator;
-    private static Map<String, String> constraintCodeMap = new HashMap<>() {
+    public static Map<String, String> constraintCodeMap = new HashMap<>() {
         {
             put("users_unique_email_idx", "exception.users.duplicate_email");
             put("meals_unique_user_datetime_idx", "exception.meals.duplicate_datetime");

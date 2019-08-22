@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.web.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -15,13 +16,13 @@ import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.validation.Valid;
 
-import static ru.javawebinar.topjava.util.ValidationUtil.getDataConflictMessage;
-
 @Controller
 @RequestMapping("/profile")
 public class ProfileUIController extends AbstractUserController {
     @Autowired
     MessageSource messageSource;
+
+    public static final String DB_ERROR_CODE = "users_unique_email_idx";
 
     @GetMapping
     public String profile() {
@@ -39,7 +40,8 @@ public class ProfileUIController extends AbstractUserController {
                 status.setComplete();
                 return "redirect:/meals";
             } catch (DataIntegrityViolationException e) {
-                model.addAttribute("message", getDataConflictMessage(messageSource, e));
+                result.rejectValue("email", DB_ERROR_CODE,
+                        messageSource.getMessage(DB_ERROR_CODE, null, LocaleContextHolder.getLocale()));
                 return "profile";
             }
         }
@@ -64,7 +66,8 @@ public class ProfileUIController extends AbstractUserController {
                 return "redirect:/login?message=app.registered&username=" + userTo.getEmail();
             } catch (DataIntegrityViolationException e) {
                 model.addAttribute("register", true);
-                model.addAttribute("message", getDataConflictMessage(messageSource, e));
+                result.rejectValue("email", DB_ERROR_CODE,
+                        messageSource.getMessage(DB_ERROR_CODE, null, LocaleContextHolder.getLocale()));
                 return "profile";
             }
         }
